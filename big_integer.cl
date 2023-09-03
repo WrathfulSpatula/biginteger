@@ -586,9 +586,7 @@ BigInteger bi_mul(const BigInteger* left, const BigInteger* right)
 // Complexity - O(x^2)
 void bi_div_mod_small(const BigInteger* left, BIG_INTEGER_HALF_WORD right, BigInteger* quotient, BIG_INTEGER_HALF_WORD* rmndr)
 {
-    if (quotient) {
-        bi_set_0(quotient);
-    }
+    bi_set_0(quotient);
     BIG_INTEGER_WORD carry = 0;
     for (int i = BIG_INTEGER_HALF_WORD_SIZE - 1; i >= 0; --i) {
         const int i2 = i >> 1;
@@ -606,9 +604,7 @@ void bi_div_mod_small(const BigInteger* left, BIG_INTEGER_HALF_WORD right, BigIn
         }
         carry %= right;
     }
-    if (rmndr) {
-        *rmndr = carry;
-    }
+    *rmndr = carry;
 }
 
 // Adapted from Qrack! (The fundamental algorithm was discovered before.)
@@ -619,28 +615,24 @@ void bi_div_mod(const BigInteger* left, const BigInteger* right, BigInteger* quo
 
     if (lrCompare < 0) {
         // left < right
-        if (quotient) {
-            // quotient = 0
-            bi_set_0(quotient);
-        }
-        if (rmndr) {
-            // rmndr = left
-            bi_copy_ip(left, rmndr);
-        }
+
+        // quotient = 0
+        bi_set_0(quotient);
+        // rmndr = left
+        bi_copy_ip(left, rmndr);
+
         return;
     }
 
     if (lrCompare == 0) {
         // left == right
-        if (quotient) {
-            // quotient = 1
-            bi_set_0(quotient);
-            quotient->bits[0] = 1;
-        }
-        if (rmndr) {
-            // rmndr = 0
-            bi_set_0(rmndr);
-        }
+
+        // quotient = 1
+        bi_set_0(quotient);
+        quotient->bits[0] = 1;
+        // rmndr = 0
+        bi_set_0(rmndr);
+
         return;
     }
 
@@ -655,16 +647,13 @@ void bi_div_mod(const BigInteger* left, const BigInteger* right, BigInteger* quo
         }
         if (wordSize >= BIG_INTEGER_WORD_SIZE) {
             // We can use the small division variant.
-            if (rmndr) {
-                BIG_INTEGER_HALF_WORD t;
-                bi_div_mod_small(left, (BIG_INTEGER_HALF_WORD)(right->bits[0]), quotient, &t);
-                rmndr->bits[0] = t;
-                for (int i = 1; i < BIG_INTEGER_WORD_SIZE; ++i) {
-                    rmndr->bits[i] = 0;
-                }
-            } else {
-                bi_div_mod_small(left, (BIG_INTEGER_HALF_WORD)(right->bits[0]), quotient, 0);
+            BIG_INTEGER_HALF_WORD t;
+            bi_div_mod_small(left, (BIG_INTEGER_HALF_WORD)(right->bits[0]), quotient, &t);
+            rmndr->bits[0] = t;
+            for (int i = 1; i < BIG_INTEGER_WORD_SIZE; ++i) {
+                rmndr->bits[i] = 0;
             }
+
             return;
         }
     }
@@ -675,13 +664,7 @@ void bi_div_mod(const BigInteger* left, const BigInteger* right, BigInteger* quo
     if (bi_compare(right, &rightTest) < 0) {
         ++rightLog2;
     }
-    if (quotient) {
-        bi_set_0(quotient);
-    }
-    BigInteger leftCopy;
-    if (!rmndr) {
-        rmndr = &leftCopy;
-    }
+    bi_set_0(quotient);
     bi_copy_ip(left, rmndr);
 
     while (bi_compare(rmndr, right) >= 0) {
