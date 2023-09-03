@@ -32,6 +32,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include "config.h"
+
 #define BIG_INTEGER_WORD_BITS 64U
 #define BIG_INTEGER_WORD_POWER 6U
 #define BIG_INTEGER_WORD unsigned long
@@ -41,7 +43,7 @@
 #define BIG_INTEGER_HALF_WORD_MASK_NOT 0xFFFFFFFF00000000ULL
 
 // This can be any power of 2 greater than (or equal to) 64:
-constexpr size_t BIG_INTEGER_BITS = 128;
+constexpr size_t BIG_INTEGER_BITS = BIG_INT_BITS;
 
 // The rest of the constants need to be consistent with the one above:
 constexpr size_t BIG_INTEGER_HALF_WORD_BITS = BIG_INTEGER_WORD_BITS >> 1U;
@@ -678,22 +680,26 @@ void bi_div_mod(const BigInteger* left, const BigInteger* right, BigInteger* quo
     if (quotient) {
         bi_set_0(quotient);
     }
-    BigInteger leftCopy;
-    if (!rmndr) {
-        rmndr = &leftCopy;
-    }
-    bi_copy_ip(left, rmndr);
+    BigInteger rem;
+    bi_copy_ip(left, &rem);
 
-    while (bi_compare(rmndr, right) >= 0) {
-        int logDiff = bi_log2(rmndr) - rightLog2;
+    while (bi_compare(&rem, right) >= 0) {
+        int logDiff = bi_log2(&rem) - rightLog2;
         if (logDiff > 0) {
             BigInteger partMul = bi_lshift(right, logDiff);
             BigInteger partQuo = bi_lshift(&bi1, logDiff);
-            bi_sub_ip(rmndr, &partMul);
-            bi_add_ip(quotient, &partQuo);
+            bi_sub_ip(&rem, &partMul);
+            if (quotient) {
+                bi_add_ip(quotient, &partQuo);
+            }
         } else {
-            bi_sub_ip(rmndr, right);
-            bi_increment(quotient, 1U);
+            bi_sub_ip(&rem, right);
+            if (quotient) {
+                bi_increment(quotient, 1U);
+            }
         }
+    }
+    if (rmndr) {
+        *rmndr = rem;
     }
 }
